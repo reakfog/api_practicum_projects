@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, filters, permissions
+from rest_framework import (
+    viewsets, filters, permissions, decorators, response)
 from . import serializers
 from .models import User, Post, Comment, Follow, Group
 from .permissions import IsAuthorOrReadOnly
@@ -68,3 +69,24 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.GroupSerializer
     permission_classes = [permissions.AllowAny]
     http_method_names = ('get', 'post')
+
+ 
+@decorators.api_view(['POST'])
+@decorators.permission_classes(AllowAny)
+def api_signup(request):
+    '''
+    This function is needed to signup user.
+    '''
+    serializer = serializers.UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = User.objects.create_user(
+            email=serializer.validated_data['email'],
+            username=serializer.validated_data['username'],
+            first_name=serializer.validated_data['first_name'],
+            last_name=serializer.validated_data['last_name'],
+            password=serializer.validated_data['password']
+        )
+        user.save()
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
