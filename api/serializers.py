@@ -3,6 +3,14 @@ from rest_framework import serializers, validators
 from .models import Comment, Post, Follow, Group, User
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('__all__')
+        write_only_fields = ('password')
+        read_only_fields = ('id')
+
+
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
